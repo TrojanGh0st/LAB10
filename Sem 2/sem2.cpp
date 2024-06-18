@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+
 using namespace std;
 
 // Clase base Material
@@ -9,32 +10,42 @@ protected:
     string autor;   // Autor o director del material
     int codigo;     // Código identificador del material
 public:
-    // Constructor de Material
+    // Constructor de la clase base Material
     Material(string t, string a, int c) : titulo(t), autor(a), codigo(c) {}
 
     // Función virtual pura para mostrar detalles del material
     virtual void mostrarDetalles() const = 0;
 
-    // Destructor virtual
-    virtual ~Material() {}
-
-    // Método para obtener el código del material
-    int getCodigo() const {
+    // Función para obtener el código del material
+    int obtenerCodigo() const {
         return codigo;
     }
+
+    // Función para obtener el título del material
+    string obtenerTitulo() const {
+        return titulo;
+    }
+
+    // Función para obtener el autor del material
+    string obtenerAutor() const {
+        return autor;
+    }
+
+    // Destructor virtual para la clase base Material
+    virtual ~Material() {}
 };
 
 // Clase derivada para Libros
 class Libro : public Material {
 public:
-    // Constructor de Libro que inicializa la clase base Material
+    // Constructor de la clase Libro que llama al constructor de Material
     Libro(string t, string a, int c) : Material(t, a, c) {}
 
     // Implementación de la función mostrarDetalles para libros
     void mostrarDetalles() const override {
-        cout << "\tLibro - Título: " << titulo << endl;
-        cout << "\tAutor: " << autor << endl;
-        cout << "\tCódigo: " << getCodigo() << endl;
+        cout << "Libro - Titulo: " << titulo << endl;
+        cout << "Autor: " << autor << endl;
+        cout << "Codigo: " << codigo << endl;
         cout << "______________________________" << endl;
     }
 };
@@ -42,14 +53,14 @@ public:
 // Clase derivada para Revistas
 class Revista : public Material {
 public:
-    // Constructor de Revista que inicializa la clase base Material
+    // Constructor de la clase Revista que llama al constructor de Material
     Revista(string t, string a, int c) : Material(t, a, c) {}
 
     // Implementación de la función mostrarDetalles para revistas
     void mostrarDetalles() const override {
-        cout << "\tRevista - Título: " << titulo << endl;
-        cout << "\tAutor: " << autor << endl;
-        cout << "\tCódigo: " << getCodigo() << endl;
+        cout << "Revista - Titulo: " << titulo << endl;
+        cout << "Autor: " << autor << endl;
+        cout << "Codigo: " << codigo << endl;
         cout << "______________________________" << endl;
     }
 };
@@ -57,107 +68,210 @@ public:
 // Clase derivada para DVDs
 class DVD : public Material {
 public:
-    // Constructor de DVD que inicializa la clase base Material
+    // Constructor de la clase DVD que llama al constructor de Material
     DVD(string t, string a, int c) : Material(t, a, c) {}
 
     // Implementación de la función mostrarDetalles para DVDs
     void mostrarDetalles() const override {
-        cout << "\tDVD - Título: " << titulo << endl;
-        cout << "\tAutor: " << autor << endl;
-        cout << "\tCódigo: " << getCodigo() << endl;
+        cout << "DVD - Titulo: " << titulo << endl;
+        cout << "Autor: " << autor << endl;
+        cout << "Codigo: " << codigo << endl;
         cout << "______________________________" << endl;
     }
 };
 
-// Plantilla de clase Coleccion<T>
+// Función para convertir una cadena a mayúsculas
+string convertirMayusculas(const string& cadena) {
+    string resultado;
+    for (char c : cadena) {
+        if (c >= 'a' && c <= 'z') {
+            resultado += c - ('a' - 'A');
+        } else {
+            resultado += c;
+        }
+    }
+    return resultado;
+}
+
+// Plantilla de clase para colecciones
 template <typename T>
 class Coleccion {
 private:
-    static const int MAX_ELEMENTOS = 100; // Tamaño máximo de la colección
-    T* elementos[MAX_ELEMENTOS]; // Arreglo de punteros a elementos
-    int numElementos; // Número actual de elementos en la colección
-
+    T* elementos[100];
+    int cantidad;
 public:
     // Constructor
-    Coleccion() : numElementos(0) {}
+    Coleccion() : cantidad(0) {}
 
-    // Destructor
-    ~Coleccion() {
-        // Liberar la memoria de todos los elementos almacenados
-        for (int i = 0; i < numElementos; ++i) {
-            delete elementos[i];
+    // Método para agregar un elemento
+    bool agregar(T* elemento) {
+        if (cantidad >= 100) {
+            cout << "La coleccion esta llena." << endl;
+            return false;
         }
-    }
 
-    // Método para agregar un nuevo material a la colección
-    void agregarMaterial(T* material) {
-        if (numElementos < MAX_ELEMENTOS) {
-            elementos[numElementos++] = material; // Agregar el material al arreglo
-        } else {
-            cout << "Error: La colección está llena, no se puede agregar más materiales." << endl;
-        }
-    }
+        // Convertir el título a mayúsculas
+        string tituloMayusculas = convertirMayusculas(elemento->obtenerTitulo());
 
-    // Método para eliminar un material por su código
-    void eliminarMaterial(int codigo) {
-        int indice = -1;
-        // Buscar el material por su código
-        for (int i = 0; i < numElementos; ++i) {
-            if (elementos[i]->getCodigo() == codigo) {
-                indice = i;
-                break;
+        // Verificar unicidad del código y autor
+        for (int i = 0; i < cantidad; ++i) {
+            if (elementos[i]->obtenerCodigo() == elemento->obtenerCodigo() ||
+                (convertirMayusculas(elementos[i]->obtenerTitulo()) == tituloMayusculas &&
+                 elementos[i]->obtenerAutor() == elemento->obtenerAutor())) {
+                cout << "Elemento con el mismo codigo o titulo y autor ya existe." << endl;
+                return false;
             }
         }
 
-        if (indice != -1) {
-            // Eliminar el material encontrado
-            delete elementos[indice];
-            // Desplazar los elementos restantes en el arreglo
-            for (int i = indice; i < numElementos - 1; ++i) {
-                elementos[i] = elementos[i + 1];
-            }
-            numElementos--; // Decrementar el contador de elementos
-        } else {
-            cout << "Error: Material no encontrado en la colección." << endl;
-        }
+        elementos[cantidad++] = elemento;
+        return true;
     }
 
-    // Método para buscar un material por su código y devolver un puntero al mismo
-    T* buscarMaterial(int codigo) {
-        for (int i = 0; i < numElementos; ++i) {
-            if (elementos[i]->getCodigo() == codigo) {
+    // Método para eliminar un elemento por código
+    void eliminar(int codigo) {
+        for (int i = 0; i < cantidad; ++i) {
+            if (elementos[i]->obtenerCodigo() == codigo) {
+                delete elementos[i];
+                for (int j = i; j < cantidad - 1; ++j) {
+                    elementos[j] = elementos[j + 1];
+                }
+                --cantidad;
+                cout << "Elemento eliminado." << endl;
+                return;
+            }
+        }
+        cout << "Elemento no encontrado." << endl;
+    }
+
+    // Método para buscar un elemento por código
+    T* buscar(int codigo) const {
+        for (int i = 0; i < cantidad; ++i) {
+            if (elementos[i]->obtenerCodigo() == codigo) {
                 return elementos[i];
             }
         }
-        return nullptr; // Retornar nullptr si el material no se encuentra
+        return nullptr;
     }
 
-    // Método para mostrar los detalles de todos los materiales en la colección
-    void listarMateriales() const {
-        for (int i = 0; i < numElementos; ++i) {
-            elementos[i]->mostrarDetalles(); // Llamar a la función mostrarDetalles del material
+    // Método para listar todos los elementos
+    void listar() const {
+        for (int i = 0; i < cantidad; ++i) {
+            elementos[i]->mostrarDetalles();
+        }
+    }
+
+    // Destructor para liberar memoria
+    ~Coleccion() {
+        for (int i = 0; i < cantidad; ++i) {
+            delete elementos[i];
         }
     }
 };
 
-// Función principal
+// Función para obtener un entero con validación
+int obtenerEntero(const string& mensaje) {
+    int valor;
+    while (true) {
+        cout << mensaje;
+        cin >> valor;
+        if (cin.fail() || valor < 0) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Entrada invalida. Por favor, ingrese un numero entero positivo." << endl;
+        } else {
+            cin.ignore(10000, '\n');
+            return valor;
+        }
+    }
+}
+
+// Función para obtener una cadena
+string obtenerCadena(const string& mensaje) {
+    string valor;
+    cout << mensaje;
+    getline(cin, valor);
+    return valor;
+}
+
+// Función para mostrar el menú
+void mostrarMenu() {
+    cout << "1. Crear Libro" << endl;
+    cout << "2. Crear Revista" << endl;
+    cout << "3. Crear DVD" << endl;
+    cout << "4. Mostrar materiales creados" << endl;
+    cout << "5. Eliminar material" << endl;
+    cout << "6. Buscar material" << endl;
+    cout << "7. Salir" << endl;
+    cout << "Seleccione una opción: ";
+}
+
 int main() {
-    // Ejemplo de uso de la plantilla Coleccion<T>
+    cout << R"(
+ ____                                        __                         __                __                                          
+/\  _`\     __                              /\ \                       /\ \        __    /\ \                                          
+\ \ \/\ \  /\_\      __      __       ___   \ \/      ____             \ \ \      /\_\   \ \ \____   _ __     __      _ __   __  __    
+ \ \ \ \ \ \/\ \   /'__`\  /'_ `\    / __`\  \/      /',__\             \ \ \  __ \/\ \   \ \ '__`\ /\`'__\ /'__`\   /\`'__\/\ \/\ \  
+  \ \ \_\ \ \ \ \ /\  __/ /\ \L\ \  /\ \L\ \        /\__, `\             \ \ \L\ \ \ \ \   \ \ \L\ \\ \ \/ /\ \L\.\_ \ \ \/ \ \ \_\ \  
+   \ \____/  \ \_\\ \____\\ \____ \ \ \____/        \/\____/              \ \____/  \ \_\   \ \_,__/ \ \_\ \ \__/.\_\ \ \_\  \/`____ \
+    \/___/    \/_/ \/____/ \/___L\ \ \/___/          \/___/                \/___/    \/_/    \/___/   \/_/  \/__/\/_/  \/_/   `/___/> \
+                             /\____/                                                                                             /\___/
+                             \_/__/                                                                                              \/__/
+)" << endl;
+
+    // Crear colecciones para diferentes tipos de materiales
     Coleccion<Material> coleccion;
 
-    // Agregar diferentes tipos de materiales a la colección
-    coleccion.agregarMaterial(new Libro("Cien años de soledad", "Gabriel García Márquez", 1001));
-    coleccion.agregarMaterial(new Revista("National Geographic", "Varios", 2001));
-    coleccion.agregarMaterial(new DVD("El Señor de los Anillos", "Peter Jackson", 3001));
+    int opcion;
+    do {
+        mostrarMenu();
+        opcion = obtenerEntero("");
+       
+        if (opcion >= 1 && opcion <= 3) {
+            string titulo = obtenerCadena("Titulo: ");
+            string autor = obtenerCadena("Autor: ");
+            int codigo = obtenerEntero("Codigo: ");
+           
+            switch (opcion) {
+                case 1: {
+                    Libro* nuevoLibro = new Libro(titulo, autor, codigo);
+                    if (!coleccion.agregar(nuevoLibro)) {
+                        delete nuevoLibro;
+                    }
+                    break;
+                }
+                case 2: {
+                    Revista* nuevaRevista = new Revista(titulo, autor, codigo);
+                    if (!coleccion.agregar(nuevaRevista)) {
+                        delete nuevaRevista;
+                    }
+                    break;
+                }
+                case 3: {
+                    DVD* nuevoDVD = new DVD(titulo, autor, codigo);
+                    if (!coleccion.agregar(nuevoDVD)) {
+                        delete nuevoDVD;
+                    }
+                    break;
+                }
+            }
+        } else if (opcion == 4) {
+            coleccion.listar();
+        } else if (opcion == 5) {
+            int codigo = obtenerEntero("Ingrese el codigo del material a eliminar: ");
+            coleccion.eliminar(codigo);
+        } else if (opcion == 6) {
+            int codigo = obtenerEntero("Ingrese el codigo del material a buscar: ");
+            Material* encontrado = coleccion.buscar(codigo);
+            if (encontrado) {
+                encontrado->mostrarDetalles();
+            } else {
+                cout << "Material no encontrado." << endl;
+            }
+        } else if (opcion != 7) {
+            cout << "Opción invalida." << endl;
+        }
+    } while (opcion != 7);
 
-    cout << "Lista de materiales:" << endl;
-    coleccion.listarMateriales(); // Mostrar los detalles de todos los materiales
-
-    // Ejemplo de eliminación de un material por su código
-    coleccion.eliminarMaterial(2001);
-
-    cout << "Lista de materiales después de eliminar:" << endl;
-    coleccion.listarMateriales(); // Mostrar la lista actualizada de materiales
-
+    cout << "Gracias por usar Diego's Library. ¡Adios!" << endl;
     return 0;
 }
